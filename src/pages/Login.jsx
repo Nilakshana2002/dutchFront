@@ -53,8 +53,6 @@ const Login = () => {
         navigate('/admin')
       } else if (data.role === 'receptionist') {
         navigate('/receptionist/dashboard')
-      } else if (data.role === 'staff') {
-        navigate('/employee/dashboard')
       } else {
         navigate('/')
       }
@@ -100,8 +98,6 @@ const Login = () => {
         navigate('/admin')
       } else if (data.role === 'receptionist') {
         navigate('/receptionist/dashboard')
-      } else if (data.role === 'staff') {
-        navigate('/employee/dashboard')
       } else {
         navigate('/')
       }

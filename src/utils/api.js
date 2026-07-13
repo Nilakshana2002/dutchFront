@@ -241,6 +241,28 @@ export async function fetchGalleryRooms() {
     return handleResponse(res);
 }
 
+export async function fetchGalleryItems() {
+    const res = await fetch(`${API_URL}/gallery`);
+    return handleResponse(res);
+}
+
+export async function createGalleryItem(payload) {
+    const res = await fetch(`${API_URL}/gallery`, {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify(payload),
+    });
+    return handleResponse(res);
+}
+
+export async function deleteGalleryItem(id) {
+    const res = await fetch(`${API_URL}/gallery/${id}`, {
+        method: 'DELETE',
+        headers: authHeaders(),
+    });
+    return handleResponse(res);
+}
+
 // Room Features
 export async function fetchRoomFeatures() {
     try {

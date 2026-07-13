@@ -62,12 +62,11 @@ const Dashboard = () => {
         else setLoading(true);
         setError(null);
         try {
-            const [s, m] = await Promise.all([
+            const [s] = await Promise.all([
                 fetchDashboardStats(),
-                fetchMonthlyRevenue(new Date().getFullYear()),
             ]);
             setStats(s);
-            setMonthly(m);
+            setMonthly([]);
         } catch (e) {
             setError(e.message);
         } finally {
@@ -134,28 +133,7 @@ const Dashboard = () => {
             )}
 
             {/* High-Fidelity Custom Command Center Row */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                
-                {/* Custom Widget 1: Premium Financial Card */}
-                <div className="bg-gradient-to-br from-navy-950 via-navy-900 to-slate-800 text-white rounded-[2rem] p-8 shadow-xl relative overflow-hidden border border-white/5 flex flex-col justify-between min-h-[220px]">
-                    <div className="absolute top-0 right-0 -mr-12 -mt-12 w-48 h-48 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
-                    <div>
-                        <div className="flex items-center justify-between mb-4">
-                            <span className="text-[10px] font-extrabold uppercase tracking-widest text-teal-400 bg-teal-500/10 px-3 py-1 rounded-full border border-teal-500/20">Revenue Today</span>
-                            <Banknote className="text-teal-400" size={22} />
-                        </div>
-                        <p className="text-white/60 text-xs font-semibold tracking-wider uppercase">Active Earnings</p>
-                        <h3 className="text-3xl lg:text-4xl font-black mt-2 tracking-tight text-white font-mono leading-none">
-                            {stats ? `Rs. ${Number(stats.totalRevenue).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'Rs. 0.00'}
-                        </h3>
-                    </div>
-                    <div className="mt-6 pt-4 border-t border-white/10 flex items-center justify-between text-xs text-white/50">
-                        <span>Real-time billing feed</span>
-                        <Link to="/admin/reports" className="text-teal-400 font-bold hover:underline flex items-center gap-1">
-                            View Reports <ArrowRight size={12} />
-                        </Link>
-                    </div>
-                </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
                 {/* Custom Widget 2: Occupancy Gauge Ring */}
                 <div className="bg-white rounded-[2rem] p-8 border border-navy-100/60 shadow-sm flex items-center justify-between min-h-[220px] hover:shadow-md transition-shadow">
@@ -269,122 +247,26 @@ const Dashboard = () => {
                         <p className="text-sm font-extrabold text-navy-950 mt-0.5">{stats?.availableRooms ?? 0}</p>
                     </div>
                 </div>
-            </div>
-
-            {/* Chart and Quick Actions Section */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            </div>            {/* Quick Actions Panel */}
+            <div className="bg-white rounded-[2rem] shadow-sm border border-navy-100 p-8 hover:shadow-md transition-all duration-300">
+                <div className="flex items-center gap-2 text-teal-600 font-bold text-xs uppercase tracking-widest">
+                    <Compass size={16} />
+                    Shortcuts
+                </div>
+                <h3 className="text-xl font-bold text-navy-955 mt-1 mb-1 font-serif">Quick Actions</h3>
+                <p className="text-xs text-navy-400 mb-6 font-medium">Frequently used management tools</p>
                 
-                {/* Performance Chart Card */}
-                <div className="lg:col-span-2 bg-white rounded-[2rem] shadow-sm border border-navy-100 p-8 hover:shadow-md transition-all duration-300">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
-                        <div>
-                            <div className="flex items-center gap-2 text-teal-600 font-bold text-xs uppercase tracking-widest">
-                                <Activity size={16} />
-                                Analytics
-                            </div>
-                            <h3 className="text-xl font-bold text-navy-950 mt-1 font-serif">Performance Overview</h3>
-                            <p className="text-xs text-navy-400 mt-1 font-medium">{new Date().getFullYear()} — Monthly revenue overview</p>
-                        </div>
-                        {avgRevenue > 0 && (
-                            <div className="text-right">
-                                <p className="text-[10px] font-bold text-navy-400 uppercase tracking-widest">Monthly Average</p>
-                                <p className="text-sm font-extrabold text-navy-950 font-mono">Rs. {Math.round(avgRevenue).toLocaleString()}</p>
-                            </div>
-                        )}
-                    </div>
-
-                    {loading ? (
-                        <div className="h-64 flex items-center justify-center">
-                            <div className="w-10 h-10 border-4 border-teal-500 border-t-transparent rounded-full animate-spin" />
-                        </div>
-                    ) : (
-                        <div className="flex gap-4 mt-6">
-                            {/* Y-Axis Labels */}
-                            <div className="flex flex-col justify-between text-[9px] font-extrabold text-navy-400 font-mono h-48 pb-8 text-right w-14 pointer-events-none select-none">
-                                <span>Rs. {formatLabel(maxVal)}</span>
-                                <span>Rs. {formatLabel(maxVal * 0.75)}</span>
-                                <span>Rs. {formatLabel(maxVal * 0.5)}</span>
-                                <span>Rs. {formatLabel(maxVal * 0.25)}</span>
-                                <span>Rs. 0</span>
-                            </div>
-
-                            {/* Chart Bar Grid */}
-                            <div className="flex-1 relative h-48">
-                                {/* Gridlines */}
-                                <div className="absolute inset-0 flex flex-col justify-between pointer-events-none h-full pb-8">
-                                    <div className="border-b border-dashed border-slate-100/70 w-full" />
-                                    <div className="border-b border-dashed border-slate-100/70 w-full" />
-                                    <div className="border-b border-dashed border-slate-100/70 w-full" />
-                                    <div className="border-b border-dashed border-slate-100/70 w-full" />
-                                    <div className="border-b border-dashed border-slate-100/70 w-full" />
-                                </div>
-
-                                {/* Average reference line */}
-                                {avgLinePct > 0 && avgLinePct < 100 && (
-                                    <div 
-                                        className="absolute left-0 right-0 border-t-2 border-dashed border-teal-500/30 z-20 pointer-events-none transition-all duration-500" 
-                                        style={{ bottom: `${avgLinePct * 0.48 + 32}px` }}
-                                    >
-                                        <span className="absolute right-2 -top-4 bg-teal-50 text-teal-700 text-[8px] font-bold px-1.5 py-0.5 rounded uppercase tracking-widest border border-teal-200/50">Avg</span>
-                                    </div>
-                                )}
-
-                                <div className="flex items-end gap-3 h-full px-1 relative z-10">
-                                    {MONTHS.map((month, i) => {
-                                        const mData = monthly[i];
-                                        const val = mData ? mData.revenue : 0;
-                                        const heightPct = maxVal > 0 ? (val / maxVal) * 100 : 0;
-                                        return (
-                                            <div key={month} className="flex-1 flex flex-col items-center gap-2.5 group relative h-full justify-end">
-                                                <div
-                                                    className="w-full bg-gradient-to-t from-teal-600 via-teal-500 to-teal-400 hover:from-teal-500 hover:to-teal-300 rounded-t-xl transition-all duration-500 cursor-pointer shadow-sm min-h-[4px] relative"
-                                                    style={{ height: `${Math.max(heightPct, 2)}%` }}
-                                                >
-                                                    {/* Tooltip Content */}
-                                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 bg-navy-950/95 backdrop-blur-md text-white p-3 rounded-2xl opacity-0 group-hover:opacity-100 transition-all duration-300 scale-95 group-hover:scale-100 whitespace-nowrap z-50 pointer-events-none shadow-xl border border-white/10 text-xs">
-                                                        <p className="font-extrabold border-b border-white/10 pb-1.5 mb-1.5 uppercase tracking-wider text-teal-400">{MONTHS[i]} Details</p>
-                                                        <div className="space-y-1">
-                                                            <p className="flex justify-between gap-6 text-white/70 font-semibold font-sans">Revenue: <span className="text-white font-bold font-mono">Rs. {mData?.revenue?.toLocaleString() || 0}</span></p>
-                                                        </div>
-                                                        <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-navy-950" />
-                                                    </div>
-                                                </div>
-                                                <span className="text-[10px] font-bold text-navy-400 uppercase tracking-widest">{month}</span>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                        </div>
-                    )}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <QuickAction to="/admin/bookings" icon={ClipboardList} label="Manage Bookings" desc="View & update booking status" color="from-teal-500 to-teal-600" />
+                    <QuickAction to="/admin/rooms" icon={BedDouble} label="Manage Rooms" desc="Add, edit room availability" color="from-amber-500 to-amber-600" />
+                    <QuickAction to="/admin/users" icon={UserCircle} label="Manage Users" desc="View guests and accounts" color="from-navy-600 to-navy-700" />
                 </div>
 
-                {/* Quick Actions Panel */}
-                <div className="bg-white rounded-[2rem] shadow-sm border border-navy-100 p-8 hover:shadow-md transition-all duration-300 flex flex-col justify-between">
-                    <div>
-                        <div className="flex items-center gap-2 text-teal-600 font-bold text-xs uppercase tracking-widest">
-                            <Compass size={16} />
-                            Shortcuts
-                        </div>
-                        <h3 className="text-xl font-bold text-navy-955 mt-1 mb-1 font-serif">Quick Actions</h3>
-                        <p className="text-xs text-navy-400 mb-6 font-medium">Frequently used management tools</p>
-                        
-                        <div className="space-y-3">
-                            <QuickAction to="/admin/bookings" icon={ClipboardList} label="Manage Bookings" desc="View & update booking status" color="from-teal-500 to-teal-600" />
-                            <QuickAction to="/admin/rooms" icon={BedDouble} label="Manage Rooms" desc="Add, edit room availability" color="from-amber-500 to-amber-600" />
-                            <QuickAction to="/admin/users" icon={UserCircle} label="Manage Users" desc="View guests and accounts" color="from-navy-600 to-navy-700" />
-                            <QuickAction to="/admin/staff" icon={Users} label="Staff & HR" desc="Employees, payroll, attendance" color="from-blue-500 to-blue-600" />
-                            <QuickAction to="/admin/reports" icon={TrendingUp} label="View Reports" desc="Revenue & occupancy analytics" color="from-emerald-500 to-emerald-600" />
-                        </div>
-                    </div>
-
-                    <div className="mt-8 pt-6 border-t border-navy-50 text-center">
-                        <p className="text-[10px] text-navy-400 font-bold uppercase tracking-widest">
-                            Dutch Point Resort System v2.0
-                        </p>
-                    </div>
+                <div className="mt-8 pt-6 border-t border-navy-50 text-center">
+                    <p className="text-[10px] text-navy-400 font-bold uppercase tracking-widest">
+                        Dutch Point Resort System v2.0
+                    </p>
                 </div>
-
             </div>
         </div>
     );
