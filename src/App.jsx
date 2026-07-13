@@ -20,9 +20,6 @@ import Gallery from './pages/Gallery'
 import PrivacyPolicy from './pages/PrivacyPolicy'
 import TermsOfService from './pages/TermsOfService'
 import FoodItems from './pages/other/foods/FoodItems'
-import EmployeeDashboard from "./pages/EmployeeDashboard"
-import EmployeeLayout from "./pages/employee/EmployeeLayout"
-import EmployeeQR from "./pages/employee/EmployeeQR"
 
 import AddRoomForm from './components/admin_components/AddRoomForm'
 import useIdleTimeout from './hooks/useIdleTimeout'
@@ -37,10 +34,9 @@ const UserManagement = lazy(() => import('./pages/admin/UserManagement'))
 const RoomManagement = lazy(() => import('./pages/admin/RoomManagement'))
 const BookingManagement = lazy(() => import('./pages/admin/BookingManagement'))
 
-const Staff = lazy(() => import('./pages/admin/Staff'))
-const AttendanceScanner = lazy(() => import('./pages/admin/AttendanceScanner'))
 const FeedbackManagement = lazy(() => import('./pages/admin/FeedbackManagement'))
 const OfferManagement = lazy(() => import('./pages/admin/OfferManagement'))
+const GalleryManagement = lazy(() => import('./pages/admin/GalleryManagement'))
 
 const ReceptionistLayout = lazy(() => import('./pages/receptionist/ReceptionistLayout'))
 const ReceptionistDashboard = lazy(() => import('./pages/receptionist/ReceptionistDashboard'))
@@ -52,7 +48,7 @@ function App() {
   useIdleTimeout(15);
   
   const location = useLocation();
-  const hideNavbarRoutes = ['/admin', '/addRoom', '/employee', '/receptionist'];
+  const hideNavbarRoutes = ['/admin', '/addRoom', '/receptionist'];
   const shouldShowNavbar = !hideNavbarRoutes.some(route => location.pathname.startsWith(route));
   
   // Hide WhatsApp floating icon on admin and receptionist panels
@@ -91,10 +87,6 @@ function App() {
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-of-service" element={<TermsOfService />} />
           <Route path="/addRoom" element={<AddRoomForm />} />
-          <Route path="/employee" element={<EmployeeLayout />}>
-            <Route path="dashboard" element={<EmployeeDashboard />} />
-            <Route path="my-qr" element={<EmployeeQR />} />
-          </Route>
           
           {/* Admin Routes */}
           <Route path="/admin" element={<AdminLayout />}>
@@ -103,12 +95,11 @@ function App() {
             <Route path="rooms" element={<RoomManagement />} />
             <Route path="bookings" element={<BookingManagement />} />
 
-            <Route path="staff" element={<Staff />} />
-            <Route path="attendance-scanner" element={<AttendanceScanner />} />
             <Route path="feedback" element={<FeedbackManagement />} />
 
 
             <Route path="offers" element={<OfferManagement />} />
+            <Route path="gallery" element={<GalleryManagement />} />
           </Route>
 
           {/* Receptionist Routes */}

@@ -17,6 +17,7 @@ import {
     Package as PackageIcon,
     Banknote,
     Tags,
+    Image,
     X
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
@@ -39,13 +40,13 @@ const Sidebar = ({ isOpen, onClose }) => {
                 { name: 'Rooms', icon: BedDouble, path: '/admin/rooms' },
                 { name: 'Bookings', icon: CalendarCheck, path: '/admin/bookings' },
                 { name: 'Offers', icon: Tags, path: '/admin/offers' },
+                { name: 'Gallery', icon: Image, path: '/admin/gallery' },
             ],
         },
         {
             label: 'People',
             items: [
                 { name: 'Users', icon: UserCircle, path: '/admin/users' },
-                { name: 'Staff & HR', icon: Users, path: '/admin/staff' },
             ],
         },
         {
