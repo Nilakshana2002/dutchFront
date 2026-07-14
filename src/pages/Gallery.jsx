@@ -180,7 +180,7 @@ const Gallery = () => {
                         Every photo tells a story, but nothing compares to the real experience. Join us at Dutch-Point Negombo Beach Resort and create your own memories.
                     </p>
                     <a
-                        href="/deluxeRooms"
+                        href="/standardRooms"
                         className="inline-block bg-blue-500 hover:bg-blue-600 text-white px-10 py-4 rounded-full font-bold text-lg transition-all duration-300 shadow-xl shadow-blue-500/20 hover:shadow-blue-500/40 transform hover:-translate-y-1"
                     >
                         Book Your Stay

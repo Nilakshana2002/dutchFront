@@ -31,7 +31,7 @@ const Home = () => {
   const maxRoomIndex = Math.max(0, totalRooms - itemsPerView);
 
   const handleBookNow = () => {
-    navigate('/deluxeRooms')
+    navigate('/standardRooms')
   }
 
   const openDayOutingRooms = (e) => {
@@ -39,14 +39,14 @@ const Home = () => {
     navigate('/DayOutingRooms')
   }
 
+  const openStandardRooms = (e) => {
+    e.stopPropagation()
+    navigate('/standardRooms')
+  }
+
   const openDeluxeRooms = (e) => {
     e.stopPropagation()
     navigate('/deluxeRooms')
-  }
-
-  const openSemiLuxuryRooms = (e) => {
-    e.stopPropagation()
-    navigate('/semiLuxuryRooms')
   }
 
   const openLuxuryRooms = (e) => {
@@ -366,13 +366,13 @@ const Home = () => {
               >
                 {[
                   {
-                    id: 'deluxe',
-                    title: 'Deluxe Rooms',
+                    id: 'standard',
+                    title: 'Standard Rooms',
                     desc: 'The pinnacle of luxury with exclusive services and amenities.',
                     img: 'https://res.cloudinary.com/dztzaoo6r/image/upload/v1774813034/r1or2-1_nv4ynw.jpg',
                     tag: 'Featured',
                     color: 'teal',
-                    onClick: openDeluxeRooms
+                    onClick: openStandardRooms
                   },
                   {
                     id: 'luxury',
@@ -385,12 +385,12 @@ const Home = () => {
                   },
                   {
                     id: 'semi-luxury',
-                    title: 'Semi-Luxury Rooms',
+                    title: 'Deluxe Rooms',
                     desc: 'Comfortable and elegant rooms with essential amenities.',
                     img: 'https://res.cloudinary.com/dztzaoo6r/image/upload/v1774813040/r4-6_qujirj.jpg',
                     tag: 'Comfort',
                     color: 'blue',
-                    onClick: openSemiLuxuryRooms
+                    onClick: openDeluxeRooms
                   },
                   {
                     id: 'day-outing',

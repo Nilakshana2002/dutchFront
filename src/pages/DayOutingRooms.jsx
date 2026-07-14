@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { fetchRoomsByCategory, checkRoomAvailability, fetchPackagesByType, fetchActiveOffers } from '../utils/api'
 import Footer from '../components/Footer'
-import BookingModal from '../components/BookingModal'
 
 const today = new Date().toISOString().split('T')[0]
 
@@ -67,7 +66,6 @@ const DayOutingRooms = () => {
     const [guests, setGuests] = useState(state?.guests || '1')
     const [availability, setAvailability] = useState(null)
     const [lightboxIndex, setLightboxIndex] = useState(null)
-    const [showBookingModal, setShowBookingModal] = useState(false)
     const [packages, setPackages] = useState([])
     const [packagesLoading, setPackagesLoading] = useState(false)
     const [packagesError, setPackagesError] = useState(null)
@@ -119,9 +117,7 @@ const DayOutingRooms = () => {
             ...(room.facilities || []),
             ...(room.features || []).filter(f => !(room.facilities || []).some(fac => fac.label === f)).map(f => ({ icon: '', label: f }))
         ],
-        includes: room.includes?.length
-            ? room.includes
-            : ['Pool access', 'Day use amenities', 'Complimentary lunch'],
+        includes: room.includes || [],
     })
 
     useEffect(() => {
@@ -196,14 +192,24 @@ const DayOutingRooms = () => {
         }
     }
 
-    const handleConfirmBooking = () => {
-        if (!selectedRoom || !outingDate) return
-        setShowBookingModal(true)
+    const handleContactUs = () => {
+        if (!selectedRoom || !outingDate) return;
+
+        const outDateStr = new Date(outingDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        
+        const text = `Hello! I would like to book a Day Outing Room at Dutch Point Resort.
+
+*Room:* ${selectedRoom.name}
+*Date:* ${outDateStr}
+*Time:* ${DaycheckInTime}
+*Guests:* ${guests}
+*Total Estimate:* ${formatPrice(selectedRoom.price)}
+
+Please let me know the next steps for booking.`;
+
+        const whatsappUrl = `https://wa.me/94764219211?text=${encodeURIComponent(text)}`;
+        window.open(whatsappUrl, '_blank');
     }
-
-
-
-
 
     const formatPrice = (price) => {
         if (price === undefined || price === null) return 'N/A';
@@ -612,8 +618,8 @@ const DayOutingRooms = () => {
                                                     </ul>
                                                 </div>
 
-                                                <button onClick={handleConfirmBooking} disabled={!outingDate || availability === false || availability === 'checking' || selectedRoom?.isAvailable === false || selectedRoom?.status === 'maintenance'} className="w-full bg-gradient-to-r from-teal-500 to-teal-600 text-white py-4 rounded-2xl font-bold text-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none animate-cta-glow transition-all duration-300 hover:from-teal-600 hover:to-teal-700 transform hover:-translate-y-0.5 active:translate-y-0">
-                                                    {selectedRoom?.status === 'maintenance' ? 'Maintenance Mode' : (selectedRoom?.isAvailable === false) ? (selectedRoom?.status === 'occupied' ? 'Room Occupied' : 'Room Reserved') : !outingDate ? 'Select Date First' : 'Confirm Booking'}
+                                                <button onClick={handleContactUs} disabled={!outingDate || availability === false || availability === 'checking' || selectedRoom?.isAvailable === false || selectedRoom?.status === 'maintenance'} className="w-full bg-gradient-to-r from-teal-500 to-teal-600 text-white py-4 rounded-2xl font-bold text-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none animate-cta-glow transition-all duration-300 hover:from-teal-600 hover:to-teal-700 transform hover:-translate-y-0.5 active:translate-y-0">
+                                                    {selectedRoom?.status === 'maintenance' ? 'Maintenance Mode' : (selectedRoom?.isAvailable === false) ? (selectedRoom?.status === 'occupied' ? 'Room Occupied' : 'Room Reserved') : !outingDate ? 'Select Date First' : 'Contact Us to Book'}
                                                 </button>
                                             </div>
                                         </div>
@@ -760,16 +766,6 @@ const DayOutingRooms = () => {
                     </div>
                 </section>
             )}
-            <BookingModal
-                isOpen={showBookingModal}
-                onClose={() => { setShowBookingModal(false) }}
-                room={selectedRoom}
-                checkIn={outingDate}
-                checkOut={outingDate}
-                guests={guests}
-                selectedPackage="day-use"
-                onSuccess={() => { setAvailability(null) }}
-            />
             <Footer />
 
         </div>

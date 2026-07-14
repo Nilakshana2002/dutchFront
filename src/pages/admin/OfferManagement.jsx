@@ -20,7 +20,7 @@ const OfferManagement = () => {
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState(null);
 
-    const roomTypes = ['deluxe', 'luxury', 'semiluxury', 'dayOuting', 'couple'];
+    const roomTypes = ['standard', 'luxury', 'deluxe', 'dayOuting', 'couple'];
 
     useEffect(() => {
         loadOffers();

@@ -25,8 +25,8 @@ const Navbar = () => {
   ]
 
   const roomCategories = [
+    { name: 'Standard Rooms', path: '/standardRooms' },
     { name: 'Deluxe Rooms', path: '/deluxeRooms' },
-    { name: 'Semi-Luxury Rooms', path: '/semiLuxuryRooms' },
     { name: 'Luxury Rooms', path: '/luxuryRooms' },
     { name: 'Day Outing', path: '/DayOutingRooms' },
 

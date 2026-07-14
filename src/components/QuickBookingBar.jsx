@@ -7,7 +7,7 @@ const QuickBookingBar = () => {
     const [checkIn, setCheckIn] = useState('')
     const [checkOut, setCheckOut] = useState('')
     const [guests, setGuests] = useState('1')
-    const [roomType, setRoomType] = useState('deluxeRooms')
+    const [roomType, setRoomType] = useState('standardRooms')
 
     const today = new Date().toISOString().split('T')[0]
     const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0]
@@ -91,8 +91,8 @@ const QuickBookingBar = () => {
                             onChange={(e) => setRoomType(e.target.value)}
                             className="w-full px-4 py-3 border border-navy-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-300 text-navy-900 font-medium appearance-none bg-white cursor-pointer"
                         >
+                            <option value="standardRooms">Standard Rooms</option>
                             <option value="deluxeRooms">Deluxe Rooms</option>
-                            <option value="semiLuxuryRooms">Semi-Luxury Rooms</option>
                             <option value="luxuryRooms">Luxury Rooms</option>
                             <option value="DayOutingRooms">Day Outing Packages</option>
                         </select>
