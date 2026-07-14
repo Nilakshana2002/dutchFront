@@ -1,9 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
-import { fetchGalleryRooms } from '../utils/api'
+import { fetchGalleryRooms, fetchGalleryItems } from '../utils/api'
 
 const CATEGORIES = ['All', 'Rooms', 'Events', 'Resort', 'Dining']
-
-
 
 const Gallery = () => {
     const [selectedCategory, setSelectedCategory] = useState('All')
@@ -15,17 +13,27 @@ const Gallery = () => {
         const loadImages = async () => {
             setLoading(true)
             try {
-                // Fetch dynamic room images
-                const roomsData = await fetchGalleryRooms()
+                // Fetch dynamic room images and admin gallery items
+                const [roomsData, galleryItemsData] = await Promise.all([
+                    fetchGalleryRooms(),
+                    fetchGalleryItems()
+                ]);
+
                 const roomImages = (roomsData || []).flatMap(room =>
                     (room.images || []).map(imgUrl => ({
                         url: imgUrl,
                         title: room.name,
                         category: 'Rooms'
                     }))
-                )
+                );
 
-                setImages(roomImages)
+                const customImages = (galleryItemsData || []).map(item => ({
+                    url: item.url,
+                    title: item.title,
+                    category: item.category
+                }));
+
+                setImages([...roomImages, ...customImages]);
             } catch (err) {
                 console.error('Error fetching gallery images:', err)
                 setImages([])

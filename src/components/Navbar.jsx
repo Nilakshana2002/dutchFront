@@ -245,16 +245,7 @@ const Navbar = () => {
                             Dashboard
                           </Link>
                         )}
-                        {user.role === 'staff' && (
-                          <Link
-                            to="/employee/dashboard"
-                            onClick={() => setIsUserDropdownOpen(false)}
-                            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-bold uppercase tracking-widest transition-colors ${shouldShowSolidNavbar ? 'text-navy-700 hover:bg-teal-50 hover:text-teal-600' : 'text-white/80 hover:bg-white/10 hover:text-white'}`}
-                          >
-                            <TrendingUp size={14} />
-                            Staff Dashboard
-                          </Link>
-                        )}
+
                         <Link
                           to="/profile"
                           onClick={() => setIsUserDropdownOpen(false)}
@@ -461,16 +452,7 @@ const Navbar = () => {
                     </svg>
                   </Link>
                 )}
-                {user.role === 'staff' && (
-                  <Link
-                    to="/employee/dashboard"
-                    className="flex items-center justify-between w-full px-5 py-4 rounded-2xl text-sm font-bold uppercase tracking-widest bg-navy-950 text-white shadow-xl shadow-navy-900/20 transition-all duration-300"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    <span>Staff Dashboard</span>
-                    <TrendingUp size={20} className="opacity-70" />
-                  </Link>
-                )}
+
                 <Link
                   to="/profile"
                   className="block w-full py-4 rounded-xl text-sm font-bold uppercase tracking-widest text-center border-2 border-navy-950 text-navy-950 hover:bg-navy-50 transition-all duration-300"
