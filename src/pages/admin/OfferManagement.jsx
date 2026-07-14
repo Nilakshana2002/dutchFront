@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, Search, Loader2 } from 'lucide-react';
 import { fetchOffers, createOffer, updateOffer, deleteOffer } from '../../utils/api';
+import ModernDatePicker from '../../components/ModernDatePicker';
+import toast from 'react-hot-toast';
 
 const OfferManagement = () => {
     const [offers, setOffers] = useState([]);
@@ -20,7 +22,7 @@ const OfferManagement = () => {
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState(null);
 
-    const roomTypes = ['standard', 'luxury', 'deluxe', 'dayOuting', 'couple'];
+    const roomTypes = ['standard', 'deluxe', 'luxury', 'couple'];
 
     useEffect(() => {
         loadOffers();
@@ -94,23 +96,54 @@ const OfferManagement = () => {
         }
     };
 
-    const handleDelete = async (id) => {
-        if (window.confirm('Are you sure you want to delete this offer?')) {
-            try {
-                await deleteOffer(id);
-                loadOffers();
-            } catch (err) {
-                alert('Error deleting offer: ' + err.message);
-            }
+    const executeDelete = async (id) => {
+        try {
+            await deleteOffer(id);
+            loadOffers();
+            toast.success('Offer deleted successfully!');
+        } catch (err) {
+            toast.error('Error deleting offer: ' + err.message);
         }
+    };
+
+    const handleDelete = (id) => {
+        toast((t) => (
+            <div className="flex flex-col gap-3">
+                <div>
+                    <p className="font-bold text-navy-900">Confirm Deletion</p>
+                    <p className="text-sm text-navy-600">Are you sure you want to delete this offer?</p>
+                </div>
+                <div className="flex gap-2 justify-end">
+                    <button 
+                        onClick={() => toast.dismiss(t.id)} 
+                        className="px-3 py-1.5 bg-navy-50 text-navy-600 rounded-lg text-sm font-bold hover:bg-navy-100 transition-colors"
+                    >
+                        Cancel
+                    </button>
+                    <button 
+                        onClick={() => {
+                            toast.dismiss(t.id);
+                            executeDelete(id);
+                        }} 
+                        className="px-3 py-1.5 bg-red-500 text-white rounded-lg text-sm font-bold hover:bg-red-600 transition-colors shadow-md shadow-red-200"
+                    >
+                        Delete
+                    </button>
+                </div>
+            </div>
+        ), {
+            duration: Infinity,
+            style: { minWidth: '300px' }
+        });
     };
 
     const toggleStatus = async (offer) => {
         try {
             await updateOffer(offer._id, { isActive: !offer.isActive });
             loadOffers();
+            toast.success('Offer status updated!');
         } catch (err) {
-            alert('Failed to update status: ' + err.message);
+            toast.error('Failed to update status: ' + err.message);
         }
     };
 
@@ -263,21 +296,17 @@ const OfferManagement = () => {
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-xs font-bold text-navy-600 mb-1">Start Date</label>
-                                        <input
-                                            required
-                                            type="date"
+                                        <ModernDatePicker
                                             value={formData.startDate}
-                                            onChange={e => setFormData({ ...formData, startDate: e.target.value })}
+                                            onChange={val => setFormData({ ...formData, startDate: val })}
                                             className="w-full bg-navy-50 border border-navy-100 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
                                         />
                                     </div>
                                     <div>
                                         <label className="block text-xs font-bold text-navy-600 mb-1">End Date</label>
-                                        <input
-                                            required
-                                            type="date"
+                                        <ModernDatePicker
                                             value={formData.endDate}
-                                            onChange={e => setFormData({ ...formData, endDate: e.target.value })}
+                                            onChange={val => setFormData({ ...formData, endDate: val })}
                                             className="w-full bg-navy-50 border border-navy-100 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
                                         />
                                     </div>
