@@ -37,6 +37,7 @@ const BookingManagement = lazy(() => import('./pages/admin/BookingManagement'))
 const FeedbackManagement = lazy(() => import('./pages/admin/FeedbackManagement'))
 const OfferManagement = lazy(() => import('./pages/admin/OfferManagement'))
 const GalleryManagement = lazy(() => import('./pages/admin/GalleryManagement'))
+const DiningManagement = lazy(() => import('./pages/admin/DiningManagement'))
 
 const ReceptionistLayout = lazy(() => import('./pages/receptionist/ReceptionistLayout'))
 const ReceptionistDashboard = lazy(() => import('./pages/receptionist/ReceptionistDashboard'))
@@ -100,6 +101,7 @@ function App() {
 
             <Route path="offers" element={<OfferManagement />} />
             <Route path="gallery" element={<GalleryManagement />} />
+            <Route path="dining" element={<DiningManagement />} />
           </Route>
 
           {/* Receptionist Routes */}

@@ -8,6 +8,14 @@ const FoodItems = () => {
 
   const [foodCategories, setFoodCategories] = useState([]);
 
+  const handleInquireNow = () => {
+    const text = `Hello! I would like to inquire about the Private Beach Dinner at Dutch Point Resort Negombo.
+
+Please let me know the availability, pricing, and customized menu options.`;
+    const whatsappUrl = `https://wa.me/94764219211?text=${encodeURIComponent(text)}`;
+    window.open(whatsappUrl, '_blank');
+  };
+
   useEffect(() => {
     const loadFoods = async () => {
       try {
@@ -155,12 +163,12 @@ const FoodItems = () => {
                     Elevate your romantic evening with a private dinner on the golden sands of Negombo. 
                     Enjoy a customized menu under the stars with the soothing melody of the Indian Ocean as your backdrop.
                   </p>
-                  <Link 
-                    to="/contact-us"
-                    className="inline-block px-8 py-4 bg-teal-500 hover:bg-teal-400 text-white font-bold rounded-xl transition-all duration-300 uppercase tracking-widest text-xs"
+                  <button 
+                    onClick={handleInquireNow}
+                    className="inline-block px-8 py-4 bg-teal-500 hover:bg-teal-400 text-white font-bold rounded-xl transition-all duration-300 uppercase tracking-widest text-xs cursor-pointer"
                   >
                     Inquire Now
-                  </Link>
+                  </button>
                 </Reveal>
               </div>
               <div className="relative">
