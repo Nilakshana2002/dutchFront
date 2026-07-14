@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Image, Plus, Trash2, X, RefreshCw, Layers, Tag, Film } from 'lucide-react';
-import { fetchGalleryItems, createGalleryItem, deleteGalleryItem } from '../../utils/api';
+import { fetchGalleryItems, createGalleryItem, deleteGalleryItem, fetchGalleryRooms, updateRoom } from '../../utils/api';
 import ImageUpload from '../../components/admin_components/ImageUpload';
 import Toast from '../../components/admin_components/Toast';
 import { useToast } from '../../components/admin_components/useToast';
@@ -10,6 +10,8 @@ const CATEGORIES = ['Rooms', 'Events', 'Resort', 'Dining'];
 const GalleryManagement = () => {
     const { toast, showToast, clearToast } = useToast();
     const [items, setItems] = useState([]);
+    const [rooms, setRooms] = useState([]);
+    const [selectedRoomId, setSelectedRoomId] = useState('');
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [modalOpen, setModalOpen] = useState(false);
@@ -19,8 +21,35 @@ const GalleryManagement = () => {
     const loadGallery = async () => {
         setLoading(true);
         try {
-            const data = await fetchGalleryItems();
-            setItems(data || []);
+            const [galleryItemsData, roomsData] = await Promise.all([
+                fetchGalleryItems(),
+                fetchGalleryRooms()
+            ]);
+            
+            setRooms(roomsData || []);
+            
+            // Map room images into unified gallery items list
+            const roomImages = (roomsData || []).flatMap(room =>
+                (room.images || []).map(imgUrl => ({
+                    _id: `${room._id}-${imgUrl}`,
+                    url: imgUrl,
+                    title: room.name,
+                    category: 'Rooms',
+                    isRoomImage: true,
+                    roomId: room._id,
+                    roomImages: room.images
+                }))
+            );
+
+            const customImages = (galleryItemsData || []).map(item => ({
+                _id: item._id,
+                url: item.url,
+                title: item.title,
+                category: item.category,
+                isRoomImage: false
+            }));
+
+            setItems([...roomImages, ...customImages]);
         } catch (e) {
             showToast(e.message || 'Failed to load gallery items', 'error');
         } finally {
@@ -38,16 +67,35 @@ const GalleryManagement = () => {
             showToast('Please upload or provide an image URL', 'error');
             return;
         }
-        if (!form.title.trim()) {
-            showToast('Please enter an image title', 'error');
-            return;
-        }
 
         setSaving(true);
         try {
-            await createGalleryItem(form);
-            showToast('Image successfully added to the gallery');
+            if (form.category === 'Rooms') {
+                if (!selectedRoomId) {
+                    showToast('Please select a room', 'error');
+                    setSaving(false);
+                    return;
+                }
+                const selectedRoom = rooms.find(r => r._id === selectedRoomId);
+                if (!selectedRoom) {
+                    showToast('Room not found', 'error');
+                    setSaving(false);
+                    return;
+                }
+                const updatedImages = [...(selectedRoom.images || []), form.url];
+                await updateRoom(selectedRoomId, { images: updatedImages });
+                showToast('Image successfully added to the room gallery');
+            } else {
+                if (!form.title.trim()) {
+                    showToast('Please enter an image title', 'error');
+                    setSaving(false);
+                    return;
+                }
+                await createGalleryItem(form);
+                showToast('Image successfully added to the gallery');
+            }
             setForm({ title: '', category: 'Resort', url: '' });
+            setSelectedRoomId('');
             setModalOpen(false);
             loadGallery();
         } catch (e) {
@@ -57,11 +105,17 @@ const GalleryManagement = () => {
         }
     };
 
-    const handleDeleteItem = async (id) => {
+    const handleDeleteItem = async (item) => {
         if (!window.confirm('Are you sure you want to delete this gallery item?')) return;
         try {
-            await deleteGalleryItem(id);
-            showToast('Gallery image removed successfully');
+            if (item.isRoomImage) {
+                const updatedImages = item.roomImages.filter(url => url !== item.url);
+                await updateRoom(item.roomId, { images: updatedImages });
+                showToast('Room image removed successfully');
+            } else {
+                await deleteGalleryItem(item._id);
+                showToast('Gallery image removed successfully');
+            }
             loadGallery();
         } catch (e) {
             showToast(e.message || 'Failed to delete gallery item', 'error');
@@ -88,7 +142,11 @@ const GalleryManagement = () => {
                     </p>
                 </div>
                 <button
-                    onClick={() => setModalOpen(true)}
+                    onClick={() => {
+                        setForm({ title: '', category: 'Resort', url: '' });
+                        if (rooms.length > 0) setSelectedRoomId(rooms[0]._id);
+                        setModalOpen(true);
+                    }}
                     className="flex items-center justify-center gap-2 px-5 py-3 bg-navy-950 text-white rounded-2xl hover:bg-navy-900 hover:shadow-lg transition-all text-xs uppercase tracking-widest font-bold active:scale-95 flex-shrink-0"
                 >
                     <Plus size={16} />
@@ -143,7 +201,7 @@ const GalleryManagement = () => {
                                     {item.category}
                                 </span>
                                 <button
-                                    onClick={() => handleDeleteItem(item._id)}
+                                    onClick={() => handleDeleteItem(item)}
                                     className="absolute bottom-3 right-3 p-2 bg-red-600/90 backdrop-blur-md text-white rounded-xl shadow-md hover:bg-red-700 transition-all opacity-0 group-hover:opacity-100 hover:scale-105 active:scale-95 duration-200"
                                     title="Delete Image"
                                 >
@@ -180,20 +238,22 @@ const GalleryManagement = () => {
 
                         {/* Modal Form */}
                         <form onSubmit={handleCreateItem} className="p-6 space-y-5">
-                            {/* Title */}
-                            <div>
-                                <label className="block text-xs font-bold text-navy-400 uppercase tracking-widest mb-1.5">
-                                    Image Title
-                                </label>
-                                <input
-                                    type="text"
-                                    value={form.title}
-                                    onChange={(e) => setForm({ ...form, title: e.target.value })}
-                                    className="w-full px-4 py-2.5 bg-slate-50 border border-navy-100 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all outline-none text-sm text-navy-950 placeholder-navy-300 font-medium"
-                                    placeholder="e.g. Poolside Sunset View"
-                                    required
-                                />
-                            </div>
+                             {/* Title */}
+                             {form.category !== 'Rooms' && (
+                                <div>
+                                    <label className="block text-xs font-bold text-navy-400 uppercase tracking-widest mb-1.5">
+                                        Image Title
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={form.title}
+                                        onChange={(e) => setForm({ ...form, title: e.target.value })}
+                                        className="w-full px-4 py-2.5 bg-slate-50 border border-navy-100 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all outline-none text-sm text-navy-950 placeholder-navy-300 font-medium"
+                                        placeholder="e.g. Poolside Sunset View"
+                                        required={form.category !== 'Rooms'}
+                                    />
+                                </div>
+                             )}
 
                             {/* Category */}
                             <div>
@@ -202,7 +262,12 @@ const GalleryManagement = () => {
                                 </label>
                                 <select
                                     value={form.category}
-                                    onChange={(e) => setForm({ ...form, category: e.target.value })}
+                                    onChange={(e) => {
+                                        setForm({ ...form, category: e.target.value });
+                                        if (e.target.value === 'Rooms' && !selectedRoomId && rooms.length > 0) {
+                                            setSelectedRoomId(rooms[0]._id);
+                                        }
+                                    }}
                                     className="w-full px-4 py-2.5 bg-slate-50 border border-navy-100 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all outline-none text-sm text-navy-950 font-semibold"
                                 >
                                     {CATEGORIES.map(cat => (
@@ -210,6 +275,28 @@ const GalleryManagement = () => {
                                     ))}
                                 </select>
                             </div>
+
+                            {/* Room Selector (Only for Rooms category) */}
+                            {form.category === 'Rooms' && (
+                                <div>
+                                    <label className="block text-xs font-bold text-navy-400 uppercase tracking-widest mb-1.5">
+                                        Select Room *
+                                    </label>
+                                    <select
+                                        value={selectedRoomId}
+                                        onChange={(e) => setSelectedRoomId(e.target.value)}
+                                        className="w-full px-4 py-2.5 bg-slate-50 border border-navy-100 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all outline-none text-sm text-navy-950 font-semibold"
+                                        required
+                                    >
+                                        <option value="">-- Choose a Room --</option>
+                                        {rooms.map(room => (
+                                            <option key={room._id} value={room._id}>
+                                                {room.name} (#{room.roomNumber})
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
 
                             {/* Image Upload Widget */}
                             <div>
