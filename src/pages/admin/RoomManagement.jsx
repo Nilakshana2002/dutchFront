@@ -350,27 +350,43 @@ export default function RoomManagement() {
                                     )}
 
 
-                                    <div className="flex items-center justify-between mb-3 bg-navy-50/50 p-2 rounded-xl border border-navy-50">
-                                        <div className={`px-2.5 py-1 rounded-full text-xs font-bold border shadow-sm flex items-center gap-1.5 capitalize ${cfg.bg} ${cfg.text} ${cfg.border}`}>
-                                            <StatusIcon size={13} />
-                                            {room.status}
-                                        </div>
-                                        {room.status === 'available' && (
+                                    <div className="flex flex-col gap-1.5 mb-3 bg-navy-50/50 p-2.5 rounded-xl border border-navy-50">
+                                        <p className="text-[10px] text-navy-400 font-bold uppercase tracking-wider ml-1">Set Availability Status</p>
+                                        <div className="grid grid-cols-3 gap-1">
                                             <button
-                                                onClick={() => handleStatusToggle(room, 'maintenance')}
-                                                className="px-3 py-1 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-lg text-[11px] font-bold transition-colors flex items-center gap-1"
-                                            >
-                                                <Wrench size={12} /> Set Maintenance
-                                            </button>
-                                        )}
-                                        {room.status === 'maintenance' && (
-                                            <button
+                                                type="button"
                                                 onClick={() => handleStatusToggle(room, 'available')}
-                                                className="px-3 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 rounded-lg text-[11px] font-bold transition-colors flex items-center gap-1"
+                                                className={`py-1.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
+                                                    room.status === 'available'
+                                                        ? 'bg-emerald-600 text-white shadow-sm'
+                                                        : 'bg-white hover:bg-emerald-50 text-emerald-700 border border-emerald-100'
+                                                }`}
                                             >
-                                                <CheckCircle size={12} /> Set Available
+                                                Available
                                             </button>
-                                        )}
+                                            <button
+                                                type="button"
+                                                onClick={() => handleStatusToggle(room, 'occupied')}
+                                                className={`py-1.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
+                                                    room.status === 'occupied'
+                                                        ? 'bg-red-600 text-white shadow-sm'
+                                                        : 'bg-white hover:bg-red-50 text-red-700 border border-red-100'
+                                                }`}
+                                            >
+                                                Occupied
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleStatusToggle(room, 'maintenance')}
+                                                className={`py-1.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
+                                                    room.status === 'maintenance'
+                                                        ? 'bg-amber-600 text-white shadow-sm'
+                                                        : 'bg-white hover:bg-amber-50 text-amber-700 border border-amber-100'
+                                                }`}
+                                            >
+                                                Maintenance
+                                            </button>
+                                        </div>
                                     </div>
 
                                     {user?.role !== 'receptionist' && (
@@ -417,8 +433,17 @@ export default function RoomManagement() {
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-semibold text-navy-600 uppercase tracking-wide mb-1">Status (Managed Auto)</label>
-                                    <input value={form.status} readOnly className="w-full px-4 py-2.5 border border-navy-200 rounded-xl text-sm bg-navy-50 text-navy-500 capitalize cursor-not-allowed focus:outline-none" />
+                                    <label className="block text-xs font-semibold text-navy-600 uppercase tracking-wide mb-1">Status</label>
+                                    <select
+                                        value={form.status}
+                                        onChange={e => setForm({ ...form, status: e.target.value })}
+                                        className="w-full px-4 py-2.5 border border-navy-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 capitalize"
+                                    >
+                                        <option value="available">Available</option>
+                                        <option value="occupied">Occupied</option>
+                                        <option value="maintenance">Maintenance</option>
+                                        <option value="reserved">Reserved</option>
+                                    </select>
                                 </div>
                                 <div>
                                     <label className="block text-xs font-semibold text-navy-600 uppercase tracking-wide mb-1">Price / Night (Rs.) *</label>

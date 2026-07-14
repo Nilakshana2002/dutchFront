@@ -41,6 +41,7 @@ const Sidebar = ({ isOpen, onClose }) => {
                 { name: 'Bookings', icon: CalendarCheck, path: '/admin/bookings' },
                 { name: 'Offers', icon: Tags, path: '/admin/offers' },
                 { name: 'Gallery', icon: Image, path: '/admin/gallery' },
+                { name: 'Dining', icon: UtensilsCrossed, path: '/admin/dining' },
             ],
         },
         {
