@@ -4,7 +4,7 @@ import Reveal from '../Reveal';
 const AddRoomForm = () => {
   const [formData, setFormData] = useState({
     name: '',
-    type: 'deluxe',
+    type: 'standard',
     price: '',
     guests: '',
     description: '',
@@ -49,7 +49,7 @@ const AddRoomForm = () => {
         setStatus({ type: 'success', message: 'Sanctuary added to the collection successfully!' });
         setFormData({
           name: '',
-          type: 'deluxe',
+          type: 'standard',
           price: '',
           guests: '',
           description: '',
@@ -98,8 +98,8 @@ const AddRoomForm = () => {
                 onChange={handleChange}
                 className="w-full px-4 py-3 rounded-xl border border-navy-100 focus:border-teal-500 outline-none transition-all"
               >
+                <option value="standard">Standard</option>
                 <option value="deluxe">Deluxe</option>
-                <option value="semiluxury">Semi-Luxury</option>
                 <option value="luxury">Luxury</option>
                 <option value="dayOuting">Day Outing</option>
                 <option value="couple">Couple</option>
