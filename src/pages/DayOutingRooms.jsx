@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { fetchRoomsByCategory, checkRoomAvailability, fetchPackagesByType, fetchActiveOffers } from '../utils/api'
 import Footer from '../components/Footer'
-
+import ModernDatePicker from '../components/ModernDatePicker'
 const today = new Date().toISOString().split('T')[0]
 
 const DaycheckInTime = "9:00 AM - 7:00 PM";
@@ -386,7 +386,7 @@ Please let me know the next steps for booking.`;
             {/*couple room view*/}
             {view === 'rooms' && (
                 <>
-                    <section className="bg-white/80 backdrop-blur-md border-b border-navy-100/50 shadow-sm py-2.5 sm:py-4">
+                    <section className="bg-white/80 backdrop-blur-md border-b border-navy-100/50 shadow-sm py-2.5 sm:py-4 relative z-40">
                         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                             <button onClick={handleBack} className="flex items-center text-navy-500 hover:text-navy-900 font-bold text-sm transition-colors mb-4 group">
                                 <span className="mr-2 transition-transform group-hover:-translate-x-1">←</span> Back to Package Categories
@@ -396,11 +396,10 @@ Please let me know the next steps for booking.`;
                                     <span className="text-2xl">📅</span>
                                     <div>
                                         <label className="block text-[10px] font-bold text-navy-400 uppercase tracking-widest mb-1">Outing Date</label>
-                                        <input
-                                            type="date"
+                                        <ModernDatePicker
                                             value={outingDate}
                                             min={today}
-                                            onChange={(e) => { setOutingDate(e.target.value); setAvailability(null) }}
+                                            onChange={(val) => { setOutingDate(val); setAvailability(null) }}
                                             className="border border-navy-200/60 rounded-xl px-3 sm:px-4 py-1.5 sm:py-2 text-navy-800 font-semibold focus:outline-none focus:ring-2 focus:ring-teal-400/50 focus:border-teal-400 bg-white text-sm transition-all"
                                         />
                                     </div>

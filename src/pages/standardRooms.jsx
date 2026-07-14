@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { fetchRoomsByCategory, checkRoomAvailability, fetchActiveOffers, fetchMealPlans } from '../utils/api'
 import Footer from '../components/Footer'
 import BookingModal from '../components/BookingModal'
+import ModernDatePicker from '../components/ModernDatePicker'
 
 const today = new Date().toISOString().split('T')[0]
 const checkInTime = "12:00 PM - 2:00 PM";
@@ -306,11 +307,10 @@ Please let me know the next steps for booking.`;
                                 <label className="block text-[10px] font-bold text-navy-400 uppercase tracking-widest mb-1">
                                     Check-In
                                 </label>
-                                <input
-                                    type="date"
+                                <ModernDatePicker
                                     value={checkIn}
                                     min={today}
-                                    onChange={(e) => handleCheckInChange(e.target.value)}
+                                    onChange={(val) => handleCheckInChange(val)}
                                     className="border border-navy-200/60 rounded-xl px-3 sm:px-4 py-1.5 sm:py-2 text-navy-800 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:border-blue-400 bg-white text-sm w-full sm:w-auto transition-all"
                                 />
                             </div>
@@ -318,11 +318,10 @@ Please let me know the next steps for booking.`;
                                 <label className="block text-[10px] font-bold text-navy-400 uppercase tracking-widest mb-1">
                                     Check-Out
                                 </label>
-                                <input
-                                    type="date"
+                                <ModernDatePicker
                                     value={checkOut}
                                     min={checkIn || today}
-                                    onChange={(e) => { setCheckOut(e.target.value); setAvailability(null) }}
+                                    onChange={(val) => { setCheckOut(val); setAvailability(null) }}
                                     className="border border-navy-200/60 rounded-xl px-3 sm:px-4 py-1.5 sm:py-2 text-navy-800 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:border-blue-400 bg-white text-sm w-full sm:w-auto transition-all"
                                 />
                             </div>
