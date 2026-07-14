@@ -910,3 +910,9 @@ export async function fetchEmployeePayrollHistory(employeeId) {
     const res = await fetch(`${API_URL}/payroll/employee/${employeeId}`, { headers: authHeaders() });
     return handleResponse(res);
 }
+
+// Meal Plans
+export async function fetchMealPlans() {
+    const res = await fetch(`${API_URL}/meal-plans`);
+    return handleResponse(res);
+}

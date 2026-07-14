@@ -448,3 +448,7 @@ body {
     font-size: 0.65rem;
   }
 }
+
+.react-datepicker-popper {
+  z-index: 9999 !important;
+}

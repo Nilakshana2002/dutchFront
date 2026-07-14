@@ -13,12 +13,12 @@ import { useToast } from '../../components/admin_components/useToast';
 import ImageUpload from '../../components/admin_components/ImageUpload';
 import { useAuth } from '../../context/AuthContext';
 
-const ROOM_TYPES = ['deluxe', 'luxury', 'semiluxury', 'dayOuting', 'couple'];
+const ROOM_TYPES = ['standard', 'luxury', 'deluxe', 'dayOuting', 'couple'];
 const STATUS_OPTIONS = ['available', 'occupied', 'maintenance'];
 
 
 const EMPTY_FORM = {
-    name: '', roomNumber: '', type: 'deluxe', price: '', guests: '', description: '',
+    name: '', roomNumber: '', type: 'standard', price: '', guests: '', description: '',
     features: [], image: '', images: '', status: 'available', view: 'ocean',
 };
 

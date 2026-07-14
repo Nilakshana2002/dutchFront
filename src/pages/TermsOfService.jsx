@@ -31,7 +31,7 @@ const sections = [
     content: [
       {
         subtitle: 'Booking Process',
-        text: 'Room reservations are made through our website by selecting a room category (Deluxe, Semi-Luxury, Luxury, or Day Outing), choosing dates and guest count, and providing guest information. A booking confirmation will be displayed on-screen and sent to the email address you provide.',
+        text: 'Room reservations are made through our website by selecting a room category (Standard, Deluxe, Luxury, or Day Outing), choosing dates and guest count, and providing guest information. A booking confirmation will be displayed on-screen and sent to the email address you provide.',
       },
       {
         subtitle: 'Room Categories & Packages',

@@ -11,8 +11,8 @@ import ForgotPassword from './pages/ForgotPassword'
 import Profile from './pages/Profile'
 import VenueGallery from './pages/VenueGallery'
 import DayOutingRooms from './pages/DayOutingRooms'
-import DeluxeRooms from './pages/deluxeRooms' 
-import SemiLuxuryRooms from './pages/semiLuxuryRooms'
+import StandardRooms from './pages/standardRooms' 
+import DeluxeRooms from './pages/deluxeRooms'
 import LuxuryRooms from './pages/luxuryRooms'
 import AboutUs from './pages/AboutUs'
 import ContactUs from './pages/ContactUs'
@@ -78,8 +78,8 @@ function App() {
           <Route path="/venues" element={<VenueGallery />} />
           <Route path="/foods" element={<FoodItems />} />
           <Route path="/DayOutingRooms" element={<DayOutingRooms />} />
+          <Route path="/standardRooms" element={<StandardRooms />} />
           <Route path="/deluxeRooms" element={<DeluxeRooms />} />
-          <Route path="/semiLuxuryRooms" element={<SemiLuxuryRooms />} />
           <Route path="/luxuryRooms" element={<LuxuryRooms />} />
           <Route path="/about-us" element={<AboutUs />} />
           <Route path="/contact-us" element={<ContactUs />} />

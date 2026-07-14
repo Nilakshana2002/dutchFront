@@ -1,9 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { fetchRoomsByCategory, checkRoomAvailability, fetchActiveOffers } from '../utils/api'
+import { fetchRoomsByCategory, checkRoomAvailability, fetchActiveOffers, fetchMealPlans } from '../utils/api'
 import Footer from '../components/Footer'
-import BookingModal from '../components/BookingModal'
-
+import ModernDatePicker from '../components/ModernDatePicker'
 const today = new Date().toISOString().split('T')[0]
 
 const checkInTime = "12:00 PM - 2:00 PM";
@@ -62,7 +61,9 @@ const LuxuryRooms = () => {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
     const [selectedRoom, setSelectedRoom] = useState(null)
-    const [selectedPackage, setSelectedPackage] = useState(state?.isDayUse ? 'day-use' : 'full-board')
+    const [mealPlans, setMealPlans] = useState([]);
+    const [mealPlan, setMealPlan] = useState('room-only');
+    const [loadingMealPlans, setLoadingMealPlans] = useState(true);
     const [checkIn, setCheckIn] = useState(state?.checkIn || '')
     const [checkOut, setCheckOut] = useState(state?.checkOut || '')
     const [guests, setGuests] = useState(state?.guests || '1')
@@ -70,6 +71,18 @@ const LuxuryRooms = () => {
     const [lightboxIndex, setLightboxIndex] = useState(null)
     const [showBookingModal, setShowBookingModal] = useState(false)
     const navigate = useNavigate()
+
+    useEffect(() => {
+        fetchMealPlans()
+            .then(data => {
+                setMealPlans(data);
+                setLoadingMealPlans(false);
+            })
+            .catch(err => {
+                console.error('Failed to fetch meal plans', err);
+                setLoadingMealPlans(false);
+            });
+    }, []);
 
     const openLightbox = (idx) => setLightboxIndex(idx)
     const closeLightbox = () => setLightboxIndex(null)
@@ -102,7 +115,7 @@ const LuxuryRooms = () => {
         ],
         includes: room.includes?.length
             ? room.includes
-            : ['Ocean views', 'Private balcony', 'Premium mini-bar'],
+            : [],
     })
 
     useEffect(() => {
@@ -110,21 +123,22 @@ const LuxuryRooms = () => {
         setError(null)
         setSelectedRoom(null)
         setAvailability(null)
-        
+
         Promise.all([
-            fetchRoomsByCategory('luxury', selectedPackage, checkIn, checkOut),
+            fetchRoomsByCategory('luxury', null, checkIn, checkOut),
             fetchActiveOffers().catch(() => [])
         ])
             .then(([data, activeOffers]) => {
                 const normalized = data.map(room => {
                     const roomObj = normalizeRoom(room);
+                    roomObj.price = parseInt(guests) <= 2 ? 35000 : 40000;
                     if (checkIn && activeOffers.length > 0) {
                         const checkInDate = new Date(checkIn);
                         const applicableOffer = activeOffers.find(offer => {
                             const start = new Date(offer.startDate);
                             const end = new Date(offer.endDate);
                             return offer.applicableRoomTypes.includes('luxury') &&
-                                   checkInDate >= start && checkInDate <= end;
+                                checkInDate >= start && checkInDate <= end;
                         });
                         if (applicableOffer) {
                             roomObj.originalPrice = roomObj.price;
@@ -140,7 +154,7 @@ const LuxuryRooms = () => {
             })
             .catch(() => setError('Unable to load rooms. Please try again.'))
             .finally(() => setLoading(false))
-    }, [selectedPackage, guests, checkIn, checkOut])
+    }, [guests, checkIn, checkOut])
 
     const handleSelectRoom = (room) => {
         setSelectedRoom(room)
@@ -150,9 +164,7 @@ const LuxuryRooms = () => {
     const handleCheckInChange = (val) => {
         setCheckIn(val)
         setAvailability(null)
-        if (selectedPackage === 'day-use') {
-            setCheckOut(val)
-        } else if (checkOut && checkOut <= val) {
+        if (checkOut && checkOut <= val) {
             setCheckOut('')
         }
     }
@@ -173,9 +185,34 @@ const LuxuryRooms = () => {
         }
     }
 
-    const handleConfirmBooking = () => {
-        if (!selectedRoom || !checkIn || (selectedPackage !== 'day-use' && !checkOut)) return
-        setShowBookingModal(true)
+    const handleContactUs = () => {
+        if (!selectedRoom || !checkIn || !checkOut) return;
+
+        const nights = calcNights();
+        const basePrice = selectedRoom.price;
+        const mp = mealPlans.find(p => p.code === mealPlan);
+        const mealPlanRate = mp ? mp.rate : 0;
+        const mealPlanLabel = mp ? mp.label : 'Room Only';
+
+        const checkInDate = new Date(checkIn).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        const checkOutDate = new Date(checkOut).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        
+        const totalAmountStr = formatPrice((basePrice + (mealPlanRate * parseInt(guests))) * nights);
+        
+        const message = `Hello! I would like to book a room at Dutch Point Resort.
+
+*Room:* ${selectedRoom.name}
+*Check-In:* ${checkInDate}
+*Check-Out:* ${checkOutDate}
+*Nights:* ${nights}
+*Guests:* ${guests}
+*Meal Plan:* ${mealPlanLabel}
+*Total Estimate:* ${totalAmountStr}
+
+Please let me know the next steps for booking.`;
+
+        const waUrl = `https://wa.me/94764219211?text=${encodeURIComponent(message)}`;
+        window.open(waUrl, '_blank');
     }
 
 
@@ -267,34 +304,22 @@ const LuxuryRooms = () => {
             <section className="bg-white/80 backdrop-blur-md border-b border-navy-100/50 shadow-sm sm:sticky sm:top-0 z-30">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 sm:py-4">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4">
-                        <div>
-                            <label className="block text-[10px] font-bold text-navy-400 uppercase tracking-widest mb-1 sm:mb-2">Package Type</label>
-                            <div className="inline-flex rounded-2xl bg-navy-50/80 p-1 border border-navy-100/50">
-                                <button onClick={() => setSelectedPackage('full-board')}
-                                    className={`px-4 sm:px-6 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all duration-300 ${selectedPackage === 'full-board' ? 'bg-amber-500 text-white shadow-lg shadow-amber-200/50' : 'text-navy-600 hover:text-navy-900 hover:bg-white/60'}`}>
-                                    Full Board
-                                </button>
-                                <button onClick={() => setSelectedPackage('day-use')}
-                                    className={`px-4 sm:px-6 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all duration-300 ${selectedPackage === 'day-use' ? 'bg-amber-500 text-white shadow-lg shadow-amber-200/50' : 'text-navy-600 hover:text-navy-900 hover:bg-white/60'}`}>
-                                    Day Use
-                                </button>
-                            </div>
-                        </div>
+
 
                         <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-3 flex-wrap">
                             <div>
                                 <label className="block text-[10px] font-bold text-navy-400 uppercase tracking-widest mb-1">
-                                    {selectedPackage === 'day-use' ? 'Select Date' : 'Check-In'}
+                                    'Check-In'
                                 </label>
-                                <input type="date" value={checkIn} min={today}
-                                    onChange={(e) => handleCheckInChange(e.target.value)}
+                                <ModernDatePicker value={checkIn} min={today}
+                                    onChange={(val) => handleCheckInChange(val)}
                                     className="border border-navy-200/60 rounded-xl px-3 sm:px-4 py-1.5 sm:py-2 text-navy-800 font-semibold focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:border-amber-400 bg-white text-sm w-full sm:w-auto transition-all" />
                             </div>
-                            {selectedPackage !== 'day-use' && (
+                            {true && (
                                 <div>
                                     <label className="block text-[10px] font-bold text-navy-400 uppercase tracking-widest mb-1">Check-Out</label>
-                                    <input type="date" value={checkOut} min={checkIn || today}
-                                        onChange={(e) => { setCheckOut(e.target.value); setAvailability(null) }}
+                                    <ModernDatePicker value={checkOut} min={checkIn || today}
+                                        onChange={(val) => { setCheckOut(val); setAvailability(null) }}
                                         className="border border-navy-200/60 rounded-xl px-3 sm:px-4 py-1.5 sm:py-2 text-navy-800 font-semibold focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:border-amber-400 bg-white text-sm w-full sm:w-auto transition-all" />
                                 </div>
                             )}
@@ -314,24 +339,24 @@ const LuxuryRooms = () => {
                                     <option value="5">5+ Guests</option>
                                 </select>
                             </div>
-                            {checkIn && checkOut && selectedPackage !== 'day-use' && calcNights() > 0 && (
+                            {checkIn && checkOut && calcNights() > 0 && (
                                 <div className="px-4 py-2 bg-amber-50 rounded-xl border border-amber-100">
                                     <span className="text-amber-700 font-bold text-sm">{calcNights()} Night{calcNights() > 1 ? 's' : ''}</span>
                                 </div>
                             )}
-                            {selectedPackage === 'day-use' && checkIn && (
+                            {false && (
                                 <div className="px-4 py-2 bg-amber-50 rounded-xl border border-amber-100">
                                     <span className="text-amber-700 font-bold text-sm">One Day Visit</span>
                                 </div>
                             )}
-                            {checkIn && (selectedPackage === 'day-use' || (checkOut && calcNights() > 0)) && selectedRoom && (
+                            {checkIn && checkOut && calcNights() > 0 && selectedRoom && (
                                 <button onClick={handleCheckAvailability} disabled={availability === 'checking'}
                                     className="px-4 sm:px-6 py-2 sm:py-2.5 bg-navy-900 text-white rounded-xl font-bold text-xs sm:text-sm hover:bg-navy-700 transition-all duration-200 shadow-md disabled:opacity-60">
                                     {availability === 'checking' ? 'Checking…' : 'Check Availability'}
                                 </button>
                             )}
                             {!checkIn && <p className="text-sm text-navy-400 italic py-2">Select stay date</p>}
-                            {checkIn && !checkOut && selectedPackage !== 'day-use' && <p className="text-sm text-navy-400 italic py-2">Select check-out date</p>}
+                            {checkIn && !checkOut && <p className="text-sm text-navy-400 italic py-2">Select check-out date</p>}
                         </div>
                     </div>
                 </div>
@@ -422,10 +447,18 @@ const LuxuryRooms = () => {
                                                         <span className="text-xs text-navy-400 line-through">{formatPrice(room.originalPrice)}</span>
                                                         <span className="text-xl sm:text-2xl font-extrabold text-amber-600 italic">{formatPrice(room.price)}/-</span>
                                                         <span className="text-[10px] font-bold text-red-500 uppercase tracking-tighter">{room.offerTitle}</span>
+                                                        <div className="text-[10px] text-navy-400 mt-1">
+                                                            * Room only: Rs. 35,000 (1-2 guests) | Rs. 40,000 (3+ guests)
+                                                        </div>
                                                     </div>
                                                 )}
                                                 {!room.hasOffer && (
-                                                    <span className="text-xl sm:text-2xl font-extrabold text-navy-900 italic">{formatPrice(room.price)}/-</span>
+                                                    <div className="flex flex-col">
+                                                        <span className="text-xl sm:text-2xl font-extrabold text-navy-900 italic">{formatPrice(room.price)}/-</span>
+                                                        <div className="text-[10px] text-navy-400 mt-1">
+                                                            * Room only: Rs. 35,000 (1-2 guests) | Rs. 40,000 (3+ guests)
+                                                        </div>
+                                                    </div>
                                                 )}
                                             </div>
                                             <button onClick={(e) => { e.stopPropagation(); handleSelectRoom(room) }}
@@ -479,9 +512,17 @@ const LuxuryRooms = () => {
                                                         <span className="text-xs text-navy-400 line-through">{formatPrice(selectedRoom.originalPrice)}</span>
                                                         <span className="text-2xl sm:text-3xl font-extrabold text-amber-600 italic">{formatPrice(selectedRoom.price)}/-</span>
                                                         <span className="text-[10px] font-bold text-red-500 uppercase tracking-tighter">{selectedRoom.offerTitle}</span>
+                                                        <div className="text-[10px] text-navy-400 mt-1">
+                                                            * Room only: Rs. 35,000 (1-2 guests) | Rs. 40,000 (3+ guests)
+                                                        </div>
                                                     </div>
                                                 ) : (
-                                                    <span className="text-2xl sm:text-3xl font-extrabold text-navy-900 italic">{formatPrice(selectedRoom.price)}/-</span>
+                                                    <div className="flex flex-col">
+                                                        <span className="text-2xl sm:text-3xl font-extrabold text-navy-900 italic">{formatPrice(selectedRoom.price)}/-</span>
+                                                        <div className="text-[10px] text-navy-400 mt-1">
+                                                            * Room only: Rs. 35,000 (1-2 guests) | Rs. 40,000 (3+ guests)
+                                                        </div>
+                                                    </div>
                                                 )}
                                             </div>
                                             <div className="text-right">
@@ -490,13 +531,13 @@ const LuxuryRooms = () => {
                                                 <span className="text-navy-400 text-xs block">{selectedRoom.size}</span>
                                             </div>
                                         </div>
-                                        {checkIn && (selectedPackage === 'day-use' || (checkOut && calcNights() > 0)) && (
+                                        {checkIn && checkOut && calcNights() > 0 && (
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 animate-fade-in">
-                                                <div className={`rounded-xl px-3 py-2 border ${selectedPackage === 'day-use' ? 'col-span-1 sm:col-span-2 bg-amber-50 border-amber-100' : 'bg-amber-50 border-amber-100'}`}>
-                                                    <span className="text-xs text-amber-600 font-bold block">{selectedPackage === 'day-use' ? 'Visit Date' : 'Check-In'}</span>
-                                                    <span className="text-navy-800 font-semibold text-sm">{new Date(checkIn).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} | {selectedPackage === 'day-use' ? DaycheckInTime : checkInTime}</span>
+                                                <div className="rounded-xl px-3 py-2 border bg-amber-50 border-amber-100">
+                                                    <span className="text-xs text-amber-600 font-bold block">'Check-In'</span>
+                                                    <span className="text-navy-800 font-semibold text-sm">{new Date(checkIn).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} | {checkInTime}</span>
                                                 </div>
-                                                {selectedPackage !== 'day-use' && (
+                                                {true && (
                                                     <div className="bg-amber-50 rounded-xl px-3 py-2 border border-amber-100">
                                                         <span className="text-xs text-amber-600 font-bold block">Check-Out</span>
                                                         <span className="text-navy-800 font-semibold text-sm">{new Date(checkOut).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} | {checkOutTime}</span>
@@ -504,11 +545,11 @@ const LuxuryRooms = () => {
                                                 )}
                                                 <div className="col-span-1 sm:col-span-2 bg-gradient-to-r from-navy-50 to-amber-50/50 rounded-xl px-3 py-2 flex justify-between items-center">
                                                     <span className="text-navy-500 text-sm">
-                                                        {selectedPackage === 'day-use' ? 'Day Use' : `${calcNights()} Night${calcNights() > 1 ? 's' : ''}`}
+                                                        {calcNights()} Night{calcNights() > 1 ? 's' : ''}
                                                     </span>
                                                     <div className="text-right">
                                                         <span className="text-navy-900 font-bold text-sm block">
-                                                            {formatPrice(selectedRoom.price * (selectedPackage === 'day-use' ? 1 : calcNights()))} Total
+                                                            {formatPrice((selectedRoom.price + ((mealPlans.find(p => p.code === mealPlan)?.rate || 0) * parseInt(guests))) * calcNights())} Total
                                                         </span>
                                                         <span className="text-[10px] text-red-500 font-bold uppercase tracking-wider">Non-refundable</span>
                                                     </div>
@@ -527,6 +568,39 @@ const LuxuryRooms = () => {
                                                 <span className="text-red-700 font-bold text-sm">Not available. Please try other dates.</span>
                                             </div>
                                         )}
+
+
+                                        {/* Meal Plans */}
+                                        <div className="mt-4">
+                                            <label className="block text-[10px] font-bold text-navy-400 uppercase tracking-widest mb-2">
+                                                Select Meal Plan
+                                            </label>
+                                            <div className="grid grid-cols-2 gap-2">
+                                                {mealPlans.map((plan) => (
+                                                    <button
+                                                        key={plan.code}
+                                                        onClick={() => setMealPlan(plan.code)}
+                                                        className={`px-3 py-2 rounded-xl text-xs font-bold transition-all duration-300 border ${mealPlan === plan.code
+                                                            ? 'bg-amber-500 text-white border-amber-500 shadow-md shadow-amber-200/50'
+                                                            : 'bg-navy-50/50 text-navy-600 border-navy-100 hover:bg-navy-100'
+                                                            }`}
+                                                    >
+                                                        <div className="flex flex-col items-center gap-0.5">
+                                                            <span>{plan.label}</span>
+                                                            {plan.rate > 0 ? (
+                                                                <span className={`text-[9px] font-medium ${mealPlan === plan.code ? 'text-amber-100' : 'text-navy-400'}`}>
+                                                                    + {formatPrice(plan.rate)}/pp
+                                                                </span>
+                                                            ) : (
+                                                                <span className={`text-[9px] font-medium ${mealPlan === plan.code ? 'text-amber-100' : 'text-navy-400'}`}>
+                                                                    Included
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
 
                                         <div className="ornament-divider !my-3"><span>Suite Details</span></div>
 
@@ -550,12 +624,19 @@ const LuxuryRooms = () => {
                                                         <span className="text-amber-500 mt-0.5 flex-shrink-0">✓</span>{item}
                                                     </li>
                                                 ))}
+
+                                                {mealPlans.find(p => p.code === mealPlan)?.includes?.map((item, i) => (
+                                                    <li key={`mp-${item}`} className="flex items-start gap-2 text-sm text-navy-600 font-semibold animate-fade-in" style={{ animationDelay: `${(selectedRoom.includes?.length + i) * 60}ms` }}>
+                                                        <span className="text-amber-500 mt-0.5 flex-shrink-0">🍽</span>
+                                                        {item}
+                                                    </li>
+                                                ))}
                                             </ul>
                                         </div>
-                                        <button onClick={handleConfirmBooking}
-                                            disabled={!checkIn || (selectedPackage !== 'day-use' && (!checkOut || calcNights() <= 0)) || availability === false || availability === 'checking' || selectedRoom?.isAvailable === false || selectedRoom?.status === 'maintenance'}
+                                        <button onClick={handleContactUs}
+                                            disabled={!checkIn || !checkOut || calcNights() <= 0 || availability === false || availability === 'checking' || selectedRoom?.isAvailable === false || selectedRoom?.status === 'maintenance'}
                                             className="w-full bg-gradient-to-r from-amber-500 to-amber-600 text-white py-4 rounded-2xl font-bold text-lg hover:from-amber-600 hover:to-amber-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none animate-cta-glow">
-                                            {selectedRoom?.status === 'maintenance' ? 'Maintenance Mode' : selectedRoom?.isAvailable === false ? (selectedRoom?.status === 'occupied' ? 'Room Occupied' : 'Room Reserved') : !checkIn ? 'Select Date First' : (selectedPackage !== 'day-use' && !checkOut ? 'Select Check-Out' : 'Confirm Booking')}
+                                            {selectedRoom?.status === 'maintenance' ? 'Maintenance Mode' : selectedRoom?.isAvailable === false ? (selectedRoom?.status === 'occupied' ? 'Room Occupied' : 'Room Reserved') : !checkIn ? 'Select Date First' : (!checkOut ? 'Select Check-Out' : 'Contact Us to Book')}
                                         </button>
 
                                         <p className="text-center text-navy-400 text-xs">Check dates & times before booking</p>
@@ -572,16 +653,7 @@ const LuxuryRooms = () => {
                     </div>
                 </div>
             </section>
-            <BookingModal
-                isOpen={showBookingModal}
-                onClose={() => { setShowBookingModal(false) }}
-                room={selectedRoom}
-                checkIn={checkIn}
-                checkOut={selectedPackage === 'day-use' ? checkIn : checkOut}
-                guests={guests}
-                selectedPackage={selectedPackage}
-                onSuccess={() => { setAvailability(null) }}
-            />
+
             <Footer />
         </div>
     )

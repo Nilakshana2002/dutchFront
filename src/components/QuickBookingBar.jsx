@@ -1,13 +1,14 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
+import ModernDatePicker from './ModernDatePicker'
 
 const QuickBookingBar = () => {
     const navigate = useNavigate()
     const [checkIn, setCheckIn] = useState('')
     const [checkOut, setCheckOut] = useState('')
     const [guests, setGuests] = useState('1')
-    const [roomType, setRoomType] = useState('deluxeRooms')
+    const [roomType, setRoomType] = useState('standardRooms')
 
     const today = new Date().toISOString().split('T')[0]
     const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0]
@@ -40,12 +41,11 @@ const QuickBookingBar = () => {
                         <label className="block text-sm font-semibold text-navy-900 mb-2">
                             Check In
                         </label>
-                        <input
-                            type="date"
+                        <ModernDatePicker
                             value={checkIn}
-                            onChange={(e) => setCheckIn(e.target.value)}
+                            onChange={(val) => setCheckIn(val)}
                             min={today}
-                            className="w-full px-4 py-3 border border-navy-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-300 text-navy-900 font-medium"
+                            className="w-full px-4 py-3 border border-navy-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-300 text-navy-900 font-medium bg-white"
                         />
                     </div>
 
@@ -54,12 +54,11 @@ const QuickBookingBar = () => {
                         <label className="block text-sm font-semibold text-navy-900 mb-2">
                             Check Out
                         </label>
-                        <input
-                            type="date"
+                        <ModernDatePicker
                             value={checkOut}
-                            onChange={(e) => setCheckOut(e.target.value)}
+                            onChange={(val) => setCheckOut(val)}
                             min={checkIn || tomorrow}
-                            className="w-full px-4 py-3 border border-navy-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-300 text-navy-900 font-medium"
+                            className="w-full px-4 py-3 border border-navy-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-300 text-navy-900 font-medium bg-white"
                         />
                     </div>
 
@@ -91,8 +90,8 @@ const QuickBookingBar = () => {
                             onChange={(e) => setRoomType(e.target.value)}
                             className="w-full px-4 py-3 border border-navy-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-300 text-navy-900 font-medium appearance-none bg-white cursor-pointer"
                         >
+                            <option value="standardRooms">Standard Rooms</option>
                             <option value="deluxeRooms">Deluxe Rooms</option>
-                            <option value="semiLuxuryRooms">Semi-Luxury Rooms</option>
                             <option value="luxuryRooms">Luxury Rooms</option>
                             <option value="DayOutingRooms">Day Outing Packages</option>
                         </select>
